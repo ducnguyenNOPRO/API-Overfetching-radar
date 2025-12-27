@@ -3,8 +3,9 @@ import { recordPaths } from "./usageRegistry";
 // Wrap the response inside a Proxy
 // recursively create a proxy for all properties' access including the root one
 function wrapWithProxy<T>(
+    endpoint: string,
     target: T,
-    path: string[] = []
+    path: string[] = [],
 ): T {
     // no tracking primitive types
     if (typeof target !== 'object' || target === null) {
@@ -13,16 +14,20 @@ function wrapWithProxy<T>(
 
     return new Proxy(target as object, {
         get(obj, property, receiver) {
-            // property is not alwayst type string
-            // could be string | symbol
-            if (typeof property === 'string' && property !== "forEach" && property !== "length") {
-                const nextPath = [...path, property];
-                recordPaths(nextPath);
-                //console.log("Next Path:", nextPath.join("."));
+            if (typeof property === 'string' && property !== "forEach" && property !== "length" && property !== "then") {
+                // Normalize path for array indexes
+                const regex: RegExp = /^\d+$/;
+                let arrayField = property;  // index like 0,1,2, etc.
+                if (regex.test(property)) {
+                    arrayField = "[]";
+                }
+
+                const nextPath = [...path, arrayField];
+                recordPaths(endpoint, nextPath);
 
                 // Recursive wrap a proxy for each nested propety
                 const value = Reflect.get(obj, property, receiver);
-                return wrapWithProxy(value, nextPath);
+                return wrapWithProxy(endpoint, value, nextPath);
             }
             return Reflect.get(obj, property, receiver)
         }

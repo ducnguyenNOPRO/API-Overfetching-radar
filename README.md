@@ -15,6 +15,8 @@ npm install -D vite typescript
 
 # Usage
 
+**need an .html file in the root folder (package.json, tsconfig.json, etc)**
+
 ## 1. Bundle all the file
 
 Rename either interceptors to a .txt file depend on whether you're using either axios or fetch API for fetching
