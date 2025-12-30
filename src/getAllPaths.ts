@@ -1,4 +1,10 @@
-export default function getAllPaths(obj: any, basePath: String[] = [], accumulator = new Set<string>()) {
+import { ARRAY_PATH } from "./patterns";
+
+export default function getAllPaths(
+    obj: any,
+    basePath: String[] = [],
+    accumulator = new Set<string>())
+{
     if (typeof obj !== "object" || obj === null) return accumulator;
 
     for (const key of Object.keys(obj)) {
@@ -10,8 +16,12 @@ export default function getAllPaths(obj: any, basePath: String[] = [], accumulat
         }
 
         const nextPath = [...basePath, arrayField];
-        // console.log(arrayField);
-        accumulator.add(nextPath.join("."));
+        const joinedPath = nextPath.join(".");
+        
+        // Only add path that doens't start or end with []
+        if (!ARRAY_PATH.test(joinedPath)) {
+            accumulator.add(joinedPath);
+        }
         getAllPaths(obj[key], nextPath, accumulator);
     }
     return accumulator;

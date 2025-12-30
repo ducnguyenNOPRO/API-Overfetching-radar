@@ -5,6 +5,7 @@ const NUMERIC_PATTERN: RegExp = /^\d+$/;
 // Need better regex for slug pattern because every string match this pattern
 // const SLUG_PATTERN: RegExp = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/; 
 const TOKEN_PATTERN: RegExp = /^[A-Za-z0-9_-]{20,}$/;
+const ARRAY_PATH: RegExp = /^\[\]$|(\[\])$/; // will remove paths that have just [] or end with []
 
 const PATTERNS_MAP = new Map<PatternType, RegExp>([
   ["uuid",  UUID_PATTERN],
@@ -13,4 +14,4 @@ const PATTERNS_MAP = new Map<PatternType, RegExp>([
   ["token", TOKEN_PATTERN],
 ]);
 
-export default PATTERNS_MAP;
+export { PATTERNS_MAP, ARRAY_PATH };

@@ -1,14 +1,10 @@
 import wrapWithProxy from './wrapWithProxy';
 import getAllPaths from './getAllPaths';
 import { usedPaths } from './usageRegistry';
-import PATTERNS_MAP from './patterns';
+import { PATTERNS_MAP, ARRAY_PATH } from './patterns';
+import {Report, Summary, EndpointReport} from './report';
 
-type PathSets = {
-  allPaths: Set<string>;
-  usedPaths?: Set<string>;
-}
-
-const result: Map<string, PathSets> = new Map();
+const allPaths = new Map<string, Set<string>>();
 const originalFetch = window.fetch;  // Default to use fetch API
 
 
@@ -51,32 +47,94 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
   // Wrap data with Proxy
   const wrappedData = wrapWithProxy(endpoint, data);
-  const allPaths = getAllPaths(data);
+  const paths = getAllPaths(data);
 
-  result.set(endpoint, {
-    allPaths: allPaths,
-  })
-
+  if (!allPaths.get(endpoint)) {
+    allPaths.set(endpoint, paths)
+  }
   // Replace the json method to return the proxied version
   response.json = () => Promise.resolve(wrappedData);
 
   return response;
 };
 
+// function validateReport(report: Report) {
+//   Object.values(report.endpoints).forEach((endpoint, key) => {
+//     const used = endpoint.used;
+//     const unused = endpoint.unused;
+//     const total = endpoint.total;
+//     const ratio = endpoint.overfetchRatio;
+
+//     if (unused.length + used.length !== total) {
+//       return false;
+//     }
+
+//     if (used.filter(value => unused.includes(value)).length > 0) {
+//       return false;
+//     }
+
+//     if (ratio > 1 || ratio < 0) {
+//       return false;
+//     }
+
+//     return true;
+//   });
+// }
+
 // Expose debug API globally
-(window as any).__OVERFETCH_REPORT__ = () => {
-
-  usedPaths.forEach((usedPathsSet, key) => {
-    const existing = result.get(key);
-    if (existing) {
-      result.set(key, {
-        ...existing,
-        usedPaths: usedPathsSet 
-      })
-    }
-  }) 
-
-  console.group('API Overfetch Report');
-  console.log("Result:", result);
-  console.groupEnd();
+(window as any).__OVERFETCH_REPORT__ = {
+  getReport: function(): Report {
+    // const report = buildReport();
+    // validateReport(report);
+    // return report;   // Validate in dev mode only
+    return buildReport();
+  },
+  reset: function(): void {
+    return clearReport();
+  }
 };
+
+function buildSummary(endpoints: Record<string, EndpointReport>): Summary {
+  let totalFields = 0;
+  allPaths.forEach(set => totalFields += set.size);
+
+  let totalUnusedFields = 0;
+  Object.values(endpoints).forEach(endpoint => {
+    totalUnusedFields += endpoint.unused.length;
+  });
+
+  return {
+    totalEndpoints: Object.keys(endpoints).length,
+    totalFields,
+    totalUnusedFields,
+    overfetchRatio: parseFloat((totalUnusedFields / totalFields).toFixed(3) || "0.000")
+  }
+}
+
+function buildReport(): Report {
+  const endpoints: Record<string, EndpointReport> = {};
+
+  usedPaths.forEach((set, key) => {
+    const exist = allPaths.get(key);
+    if (exist) {
+      const allPaths = exist ?? new Set<string>();
+      const unused = [...allPaths].filter(p => !set.has(p))
+      endpoints[key] = {
+        used: [...set],
+        unused,
+        total: allPaths.size,
+        overfetchRatio: parseFloat((unused.length / allPaths.size).toFixed(3) || "0.000"),
+      }
+    }
+  });
+
+  return {
+    summary: buildSummary(endpoints),
+    endpoints
+  }
+}
+
+function clearReport(): void {
+  allPaths.clear();
+  usedPaths.clear();
+}
