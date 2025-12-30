@@ -1,3 +1,4 @@
+import { ARRAY_PATH } from "./patterns";
 import { recordPaths } from "./usageRegistry";
 
 // Wrap the response inside a Proxy
@@ -23,7 +24,12 @@ function wrapWithProxy<T>(
                 }
 
                 const nextPath = [...path, arrayField];
-                recordPaths(endpoint, nextPath);
+
+                
+                const joinedPath = nextPath.join(".");
+                if (!ARRAY_PATH.test(joinedPath)) {
+                    recordPaths(endpoint, nextPath);
+                }
 
                 // Recursive wrap a proxy for each nested propety
                 const value = Reflect.get(obj, property, receiver);
