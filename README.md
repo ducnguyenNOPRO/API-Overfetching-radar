@@ -35,11 +35,10 @@ Add a script to your .html file
 <script src="./dist/api-overfetch-inspector.umd.js"></script>
 ```
 
-Navigate the app as normal and after fetching data. In the console do:
+Navigate the app as normal, after fetching data and used it. In the console do:
 
 ```bash
-__OVERFETCH_REPORT__ ()
+__OVERFETCH_REPORT__.getReport()
 ```
 
-*usedPath is what field did the website used -> eg. user, user.name, user.addrress.city, etc.
-*unusedPath is compared again allPaths built from the response
+**Read report.ts to understand the report structure**
