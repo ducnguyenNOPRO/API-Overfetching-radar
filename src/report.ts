@@ -6,7 +6,7 @@ type EndpointReport = {
 }
 
 type Summary = {
-    totalEndpoints: number;   // total unique normalized endpoints observed
+    totalNormalizedEndpoints: number;   // total unique normalized endpoints observed
     totalFields: number;   // Same requested field from different normalized endpoints also counted
     totalUnusedFields: number;   // Fields that are not used in page
     overfetchRatio: number;  //  unusedFields / totalFields * 100

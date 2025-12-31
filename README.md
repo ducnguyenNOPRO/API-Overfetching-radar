@@ -1,44 +1,44 @@
 # Project Title
 
-A simple testing tool for checking if an API is overfetching using a proxy wrapper around your response before it's used in the frontend
-Support either axios or fetching API
+A tool to help detect and analyze API overfetching by intercepting API calls and tracking used/unused fields. Support either axios or fetching API. 
 
-**Currently in Progress**
+It monitor the respones from GET Request, records every fields (stored as paths) that the web page used and a generate a report.
 
 # Installation
 
-Only need to install vite for bundle build
-
+Install the package via npm:
 ```bash
-npm install -D vite typescript
+npm install api-overfetching-radar
 ```
 
+**If you want to build and test the tool locally from the Git repository:**
+```bash
+git clone https://github.com/ducnguyenNOPRO/API-Overfetching-radar.git
+cd API-Overfetching-radar
+npm install
+npm run test
+```
 # Usage
 
-**need an .html file in the root folder (package.json, tsconfig.json, etc)**
-
-## 1. Bundle all the file
-
-Rename either interceptors to a .txt file depend on whether you're using either axios or fetch API for fetching
-Then:
+## In a Js/Ts project:
+Import and use the functions directly (after installing via npm):
 ```bash
-npx vite build
+import { attachInterceptor, buildReport, clearReport } from 'api-overfetching-radar';
+
+attachInterceptor();
+
+// Later, e.g. on user action (button click, etc.):
+const report = buildReport();
+console.log(report);
+
+// Reset if needed
+clearReport();
 ```
 
-## 2. Webpage
-
-**Right now only work for simple .html webpage for fetching data**
-
-Add a script to your .html file
-
+## Cloned repo / Simple testing:
+Put your .html in root dir
+Inject a script (after npm run test)
 ```bash
-<script src="./dist/api-overfetch-inspector.umd.js"></script>
+<script src="./dist/index.global.js"></script>
 ```
 
-Navigate the app as normal, after fetching data and used it. In the console do:
-
-```bash
-__OVERFETCH_REPORT__.getReport()
-```
-
-**Read report.ts to understand the report structure**
