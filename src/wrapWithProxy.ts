@@ -15,6 +15,7 @@ function wrapWithProxy<T>(
 
     return new Proxy(target as object, {
         get(obj, property, receiver) {
+            const value = Reflect.get(obj, property, receiver);
             if (typeof property === 'string' && property !== "forEach" && property !== "length" && property !== "then") {
                 // Normalize path for array indexes
                 const regex: RegExp = /^\d+$/;
@@ -32,10 +33,9 @@ function wrapWithProxy<T>(
                 }
 
                 // Recursive wrap a proxy for each nested propety
-                const value = Reflect.get(obj, property, receiver);
                 return wrapWithProxy(endpoint, value, nextPath);
             }
-            return Reflect.get(obj, property, receiver)
+            return value
         }
     }) as T;
 }

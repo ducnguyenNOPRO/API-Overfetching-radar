@@ -24,17 +24,46 @@
 
   <h1>Fetch Posts</h1>
   <button id="fetchBtn">Fetch Data</button>
+  <button id="fetchBtn2">Fetch More Data</button>
+  <button id="build"></button>
 
   <div id="results-posts"></div>
   <div id="results-city"></div>
+  <div id="more-results">Build</div>
 
-  <script src="./dist/api-overfetch-inspector.umd.js"></script>
+
+
+  <script src="./dist/index.global.js"></script>
+
 
   <script>
     const button = document.getElementById("fetchBtn");
+    const button2 = document.getElementById("fetchBtn2");
+    const moreResultDiv = document.getElementById("more-results");
     const resultsDiv = document.getElementById("results-posts");
     const resultsDiv2 = document.getElementById("results-city");
     const resultsDiv3 = document.getElementById("results-city");
+
+    button2.addEventListener("click", async () => {
+      moreResultDiv.innerHTML = "Loading...";
+      try {
+        const response4 = await fetch("https://dog.ceo/api/breeds/image/random");
+        const data4 = await response4.json();
+
+        moreResultDiv.innerHTML = "";
+        
+        const div4 = document.createElement("div");
+        div4.className = "item";
+        div4.innerHTML = `
+          <strong>${data4.status}</strong>
+          <p>${data4.message}</p>
+        `
+        moreResultDiv.appendChild(div4);
+      } catch (error) {
+        resultsDiv.innerHTML = "Failed to fetch data.";
+        console.error(error);
+      }
+    })
 
     button.addEventListener("click", async () => {
       resultsDiv.innerHTML = "Loading...";

@@ -1,16 +1,24 @@
 {
   "name": "api-overfetching-radar",
-  "version": "1.0.0",
-  "description": "A simple testing tool for checking if an API is overfetching -- Currently in Progress",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "A simple testing tool for checking if an API is overfetching",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.3.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "test": "tsup src/index.ts --format iife --global-name __OVERFETCH_REPORT__ --dts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "test",
+    "tools",
+    "api",
+    "overfetching"
+  ],
+  "author": "mkn0",
+  "license": "MIT"
 }

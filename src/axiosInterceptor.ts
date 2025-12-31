@@ -1,43 +1,38 @@
 import wrapWithProxy from './wrapWithProxy';
 import getAllPaths from './getAllPaths';
-import { usedPaths } from './usageRegistry';
+import normalizeEndpoints from './normalizeEndpoints';
 
-let allPaths: Set<string> | null = null;
+let allPathsAxios = new Map<string, Set<string>>();
+let interceptorId: number | null = null;
+const axios = (window as any).axios;
 
-function attachInterceptor() {
-    const axios = (window as any).axios;
+function attachAxiosInterceptor() {
+  if (interceptorId !== null) { return; }
 
     if (!axios) {
         console.warn('window.axios not found');
         return;
     }
 
-    axios.interceptors.response.use((response: any) => {
-    console.log("Axios Intercepting");
-    const original = response.data;
+    interceptorId = axios.interceptors.response.use((response: any) => {
+      const original = response.data;
+      const endpoint = normalizeEndpoints(response.config.url);
 
     if (typeof original === 'object' && original !== null) {
-        allPaths = getAllPaths(original);
-        response.data = wrapWithProxy(original);
+      const paths = getAllPaths(original);
+      allPathsAxios.set(endpoint, paths);
+        response.data = wrapWithProxy(endpoint, original);
     }
 
     return response;
     });
 }
 
-attachInterceptor();
-
-// Expose debug API globally
-(window as any).__OVERFETCH_REPORT__ = () => {
-  if (!allPaths) {
-    console.warn('No API responses captured yet');
-    return;
+function detachAxiosInterceptor() {
+  if (interceptorId !== null) {
+    axios.interceptors.response.eject(interceptorId);
+    interceptorId = null;
   }
+}
 
-  const unused = [...allPaths].filter(p => !usedPaths.has(p));
-
-  console.group('API Overfetch Report');
-  console.log('Used paths:', [...usedPaths]);
-  console.log('Unused paths:', unused);
-  console.groupEnd();
-};
+export { allPathsAxios, attachAxiosInterceptor, detachAxiosInterceptor };
